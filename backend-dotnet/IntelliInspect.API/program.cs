@@ -9,6 +9,14 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<DateRangeService>();
 builder.Services.AddHttpClient<TrainingService>();
 
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+});
 
 var app = builder.Build();
 
@@ -16,5 +24,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+// Use CORS
+app.UseCors("AllowAll");
 
 app.Run();
