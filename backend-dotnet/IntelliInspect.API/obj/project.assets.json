@@ -49,19 +49,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\nikhn\\.nuget\\packages\\": {}
+    "C:\\Users\\Keerthana\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\nikhn\\Documents\\nikhil\\team5\\backend-dotnet\\IntelliInspect.API\\IntelliInspect.API.csproj",
+      "projectUniqueName": "C:\\Users\\Keerthana\\Desktop\\backend-dotnet\\IntelliInspect.API\\IntelliInspect.API.csproj",
       "projectName": "IntelliInspect.API",
-      "projectPath": "C:\\Users\\nikhn\\Documents\\nikhil\\team5\\backend-dotnet\\IntelliInspect.API\\IntelliInspect.API.csproj",
-      "packagesPath": "C:\\Users\\nikhn\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\nikhn\\Documents\\nikhil\\team5\\backend-dotnet\\IntelliInspect.API\\obj\\",
+      "projectPath": "C:\\Users\\Keerthana\\Desktop\\backend-dotnet\\IntelliInspect.API\\IntelliInspect.API.csproj",
+      "packagesPath": "C:\\Users\\Keerthana\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Keerthana\\Desktop\\backend-dotnet\\IntelliInspect.API\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\nikhn\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Keerthana\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
