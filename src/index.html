@@ -876,60 +876,61 @@
                 }
             }
 
-            processFile(file) {
+            async processFile(file) {
                 this.uploadedFile = file;
-                
-                setTimeout(() => {
-                    this.showSummaryCard(file);
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                try {
+                    const response = await fetch("http://localhost:5000/api/upload", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Upload failed: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    this.showSummaryCard(data);  // pass backend JSON
                     document.getElementById('nextBtn').disabled = false;
-                }, 1000);
+                } catch (error) {
+                    alert("Error uploading file: " + error.message);
+                    console.error(error);
+                }
             }
 
-            showSummaryCard(file) {
+            showSummaryCard(data) {
                 const summaryCard = document.getElementById('summaryCard');
                 const summaryGrid = document.getElementById('summaryGrid');
-                
-                const mockData = this.generateMockSummary(file);
                 
                 summaryGrid.innerHTML = `
                     <div class="summary-item">
                         <div class="summary-label">File Name</div>
-                        <div class="summary-value link">${file.name}</div>
+                        <div class="summary-value link">${data.fileName}</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Total Records</div>
-                        <div class="summary-value">${mockData.totalRecords}</div>
+                        <div class="summary-value">${data.totalRecords}</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Total Columns</div>
-                        <div class="summary-value">${mockData.totalColumns}</div>
+                        <div class="summary-value">${data.totalColumns}</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Pass Rate</div>
-                        <div class="summary-value">${mockData.passRate}</div>
+                        <div class="summary-value">${(data.passRate * 100).toFixed(1)}%</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Date Range</div>
-                        <div class="summary-value">${mockData.dateRange}</div>
+                        <div class="summary-value">${data.startTimestamp.split("T")[0]} to ${data.endTimestamp.split("T")[0]}</div>
                     </div>
                 `;
                 
                 summaryCard.classList.remove('hidden');
             }
 
-            generateMockSummary(file) {
-                const records = Math.floor(Math.random() * 50000) + 10000;
-                const columns = Math.floor(Math.random() * 20) + 5;
-                const passRate = (Math.random() * 30 + 70).toFixed(1) + '%';
-                const dateRange = '2021-01-01 to 2021-12-31';
-                
-                return {
-                    totalRecords: records.toLocaleString(),
-                    totalColumns: columns.toString(),
-                    passRate: passRate,
-                    dateRange: dateRange
-                };
-            }
 
             renderDateRangesStep(content) {
                 content.innerHTML = `
