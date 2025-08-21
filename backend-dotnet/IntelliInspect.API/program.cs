@@ -8,6 +8,7 @@ builder.Services.AddControllers();
 // Register DateRangeService with DI container
 builder.Services.AddScoped<DateRangeService>();
 builder.Services.AddHttpClient<TrainingService>();
+builder.Services.AddHttpClient<SimulationService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -20,7 +21,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();

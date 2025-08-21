@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  ml-service-python:
+    build:
+      context: .
+      dockerfile: ml-service/Dockerfile
+    image: ml-service-python:latest
+    container_name: ml-service-python
+    ports:
+      - "8000:8000"
+    networks:
+      - intelliinspect-net
+
+  backend-dotnet:
+    build:
+      context: .
+      dockerfile: backend-dotnet/IntelliInspect.API/Dockerfile
+    image: backend-dotnet:latest
+    container_name: backend-dotnet
+    environment:
+      - ML_SERVICE_URL=http://ml-service-python:8000
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - ml-service-python
+    ports:
+      - "8080:8080"
+    networks:
+      - intelliinspect-net
+
+  frontend-angular:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    image: frontend-angular:latest
+    container_name: frontend-angular
+    depends_on:
+      - backend-dotnet
+    ports:
+      - "4200:80"
+    networks:
+      - intelliinspect-net
+
+networks:
+  intelliinspect-net:
+    driver: bridge
+
+

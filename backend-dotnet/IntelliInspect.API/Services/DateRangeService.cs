@@ -78,6 +78,13 @@ namespace IntelliInspect.API.Services
                 .OrderBy(m => m.Month)
                 .ToList();
 
+            // ✅ daily breakdown (for timeline bars)
+            var dailyCounts = dataset
+                .GroupBy(r => r.SyntheticTimestamp.ToString("yyyy-MM-dd"))
+                .Select(g => new DailyCount { Date = g.Key, Records = g.Count() })
+                .OrderBy(d => d.Date)
+                .ToList();
+
             return new DateRangeResponse
             {
                 Status = "Valid",
@@ -100,7 +107,8 @@ namespace IntelliInspect.API.Services
                     Days = (request.SimEnd - request.SimStart).Days + 1,
                     Range = $"{request.SimStart:yyyy-MM-dd} to {request.SimEnd:yyyy-MM-dd}"
                 },
-                MonthlyCounts = monthlyCounts
+                MonthlyCounts = monthlyCounts,
+                DailyCounts = dailyCounts
             };
         }
     }

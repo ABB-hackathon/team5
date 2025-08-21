@@ -13,6 +13,12 @@ namespace IntelliInspect.API.Models
         public int Records { get; set; }
     }
 
+    public class DailyCount
+    {
+        public string Date { get; set; } = string.Empty;
+        public int Records { get; set; }
+    }
+
     public class DateRangeResponse
     {
         public string Status { get; set; } = "Invalid";
@@ -20,6 +26,7 @@ namespace IntelliInspect.API.Models
         public PeriodSummary Testing { get; set; } = new();
         public PeriodSummary Simulation { get; set; } = new();
         public List<MonthlyCount> MonthlyCounts { get; set; } = new();
+        public List<DailyCount> DailyCounts { get; set; } = new();
         public string Message { get; set; } = string.Empty;
     }
 }

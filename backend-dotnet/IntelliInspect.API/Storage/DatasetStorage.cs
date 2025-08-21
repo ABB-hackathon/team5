@@ -38,8 +38,18 @@ namespace IntelliInspect.API.Storage
 
             var rows = new List<DatasetRow>();
             using var reader = new StreamReader(path);
-            var header = reader.ReadLine(); // skip header
+            var header = reader.ReadLine();
             if (header == null) return null;
+
+            var headers = header.Split(',').Select(h => h.Trim()).ToList();
+            int idxTs = headers.FindIndex(h => string.Equals(h, "synthetic_timestamp", StringComparison.OrdinalIgnoreCase));
+            int idxA = headers.FindIndex(h => string.Equals(h, "Sensor_A", StringComparison.OrdinalIgnoreCase));
+            int idxB = headers.FindIndex(h => string.Equals(h, "Sensor_B", StringComparison.OrdinalIgnoreCase));
+            int idxC = headers.FindIndex(h => string.Equals(h, "Sensor_C", StringComparison.OrdinalIgnoreCase));
+            int idxTemp = headers.FindIndex(h => string.Equals(h, "Temperature", StringComparison.OrdinalIgnoreCase));
+            int idxPress = headers.FindIndex(h => string.Equals(h, "Pressure", StringComparison.OrdinalIgnoreCase));
+            int idxHum = headers.FindIndex(h => string.Equals(h, "Humidity", StringComparison.OrdinalIgnoreCase));
+            int idxResp = headers.FindIndex(h => string.Equals(h, "Response", StringComparison.OrdinalIgnoreCase));
 
             while (!reader.EndOfStream)
             {
@@ -47,25 +57,32 @@ namespace IntelliInspect.API.Storage
                 if (string.IsNullOrWhiteSpace(line)) continue;
 
                 var parts = line.Split(',');
-
                 try
                 {
-                    var row = new DatasetRow
+                    DateTime ts = DateTime.Parse(parts[idxTs], CultureInfo.InvariantCulture);
+                    double sensorA = idxA >= 0 && idxA < parts.Length ? double.Parse(parts[idxA], CultureInfo.InvariantCulture) : 0;
+                    double sensorB = idxB >= 0 && idxB < parts.Length ? double.Parse(parts[idxB], CultureInfo.InvariantCulture) : 0;
+                    double sensorC = idxC >= 0 && idxC < parts.Length ? double.Parse(parts[idxC], CultureInfo.InvariantCulture) : 0;
+                    double temp = idxTemp >= 0 && idxTemp < parts.Length ? double.Parse(parts[idxTemp], CultureInfo.InvariantCulture) : 0;
+                    int press = idxPress >= 0 && idxPress < parts.Length ? int.Parse(parts[idxPress], CultureInfo.InvariantCulture) : 0;
+                    int hum = idxHum >= 0 && idxHum < parts.Length ? int.Parse(parts[idxHum], CultureInfo.InvariantCulture) : 0;
+                    int resp = idxResp >= 0 && idxResp < parts.Length ? int.Parse(parts[idxResp], CultureInfo.InvariantCulture) : 0;
+
+                    rows.Add(new DatasetRow
                     {
-                        SyntheticTimestamp = DateTime.Parse(parts[0], CultureInfo.InvariantCulture),
-                        Sensor_A = double.Parse(parts[1], CultureInfo.InvariantCulture),
-                        Sensor_B = double.Parse(parts[2], CultureInfo.InvariantCulture),
-                        Sensor_C = double.Parse(parts[3], CultureInfo.InvariantCulture),
-                        Temperature = double.Parse(parts[4], CultureInfo.InvariantCulture),
-                        Pressure = int.Parse(parts[5], CultureInfo.InvariantCulture),
-                        Humidity = int.Parse(parts[6], CultureInfo.InvariantCulture),
-                        Response = int.Parse(parts[7], CultureInfo.InvariantCulture)
-                    };
-                    rows.Add(row);
+                        SyntheticTimestamp = ts,
+                        Sensor_A = sensorA,
+                        Sensor_B = sensorB,
+                        Sensor_C = sensorC,
+                        Temperature = temp,
+                        Pressure = press,
+                        Humidity = hum,
+                        Response = resp
+                    });
                 }
                 catch
                 {
-                    // TODO: log/handle bad row
+                    // ignore bad row
                 }
             }
 

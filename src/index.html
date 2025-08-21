@@ -732,27 +732,11 @@
                     simulation: { start: '', end: '' }
                 };
                 this.isValidated = false;
-                this.mockDataset = this.generateMockDataset();
+                this.dailyCounts = [];
                 this.initializeApp();
             }
 
-            generateMockDataset() {
-                // Generate mock dataset with dates from 2021
-                const startDate = new Date('2021-01-01');
-                const endDate = new Date('2021-12-31');
-                const data = [];
-                
-                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                    // Add some variation in record counts per day
-                    const recordCount = Math.floor(Math.random() * 100) + 50;
-                    data.push({
-                        date: new Date(d).toISOString().split('T')[0],
-                        recordCount: recordCount
-                    });
-                }
-                
-                return data;
-            }
+            // Deprecated: generateMockDataset removed; using backend daily counts instead
 
             initializeApp() {
                 this.renderStep();
@@ -904,27 +888,37 @@
             showSummaryCard(data) {
                 const summaryCard = document.getElementById('summaryCard');
                 const summaryGrid = document.getElementById('summaryGrid');
+                const fileName = data.fileName || data.FileName || '';
+                const totalRecords = data.totalRecords || data.TotalRecords || 0;
+                const totalColumns = data.totalColumns || data.TotalColumns || 0;
+                const passRate = data.passRate ?? data.PassRate ?? 0;
+                const startTs = (data.startTimestamp || data.StartTimestamp || '').toString();
+                const endTs = (data.endTimestamp || data.EndTimestamp || '').toString();
+                const startDateStr = startTs ? startTs.split('T')[0] : '';
+                const endDateStr = endTs ? endTs.split('T')[0] : '';
+                // Save bounds for date inputs
+                this.datasetBounds = { min: startDateStr, max: endDateStr };
                 
                 summaryGrid.innerHTML = `
                     <div class="summary-item">
                         <div class="summary-label">File Name</div>
-                        <div class="summary-value link">${data.fileName}</div>
+                        <div class="summary-value link">${fileName}</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Total Records</div>
-                        <div class="summary-value">${data.totalRecords}</div>
+                        <div class="summary-value">${totalRecords}</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Total Columns</div>
-                        <div class="summary-value">${data.totalColumns}</div>
+                        <div class="summary-value">${totalColumns}</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Pass Rate</div>
-                        <div class="summary-value">${(data.passRate * 100).toFixed(1)}%</div>
+                        <div class="summary-value">${(Number(passRate) * 100).toFixed(1)}%</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Date Range</div>
-                        <div class="summary-value">${data.startTimestamp.split("T")[0]} to ${data.endTimestamp.split("T")[0]}</div>
+                        <div class="summary-value">${startDateStr} to ${endDateStr}</div>
                     </div>
                 `;
                 
@@ -943,11 +937,19 @@
                                 <h3><div class="period-icon training"></div>Training Period</h3>
                                 <div class="date-input-group">
                                     <label>Start Date</label>
-                                    <input type="date" class="date-input" id="trainingStart" min="2021-01-01" max="2021-12-31" value="${this.dateRanges.training.start}">
+                                    <input type="date" class="date-input" id="trainingStart" min="${(this.datasetBounds && this.datasetBounds.min) || '2021-01-01'}" max="${(this.datasetBounds && this.datasetBounds.max) || '2021-12-31'}" value="${this.dateRanges.training.start}">
+                                </div>
+                                <div class="date-input-group">
+                                    <label>Start Time</label>
+                                    <input type="time" class="date-input" id="trainingStartTime" value="${this.dateRanges.training.startTime || '00:00'}">
                                 </div>
                                 <div class="date-input-group">
                                     <label>End Date</label>
-                                    <input type="date" class="date-input" id="trainingEnd" min="2021-01-01" max="2021-12-31" value="${this.dateRanges.training.end}">
+                                    <input type="date" class="date-input" id="trainingEnd" min="${(this.datasetBounds && this.datasetBounds.min) || '2021-01-01'}" max="${(this.datasetBounds && this.datasetBounds.max) || '2021-12-31'}" value="${this.dateRanges.training.end}">
+                                </div>
+                                <div class="date-input-group">
+                                    <label>End Time</label>
+                                    <input type="time" class="date-input" id="trainingEndTime" value="${this.dateRanges.training.endTime || '23:59'}">
                                 </div>
                             </div>
                             
@@ -955,11 +957,19 @@
                                 <h3><div class="period-icon testing"></div>Testing Period</h3>
                                 <div class="date-input-group">
                                     <label>Start Date</label>
-                                    <input type="date" class="date-input" id="testingStart" min="2021-01-01" max="2021-12-31" value="${this.dateRanges.testing.start}">
+                                    <input type="date" class="date-input" id="testingStart" min="${(this.datasetBounds && this.datasetBounds.min) || '2021-01-01'}" max="${(this.datasetBounds && this.datasetBounds.max) || '2021-12-31'}" value="${this.dateRanges.testing.start}">
+                                </div>
+                                <div class="date-input-group">
+                                    <label>Start Time</label>
+                                    <input type="time" class="date-input" id="testingStartTime" value="${this.dateRanges.testing.startTime || '00:00'}">
                                 </div>
                                 <div class="date-input-group">
                                     <label>End Date</label>
-                                    <input type="date" class="date-input" id="testingEnd" min="2021-01-01" max="2021-12-31" value="${this.dateRanges.testing.end}">
+                                    <input type="date" class="date-input" id="testingEnd" min="${(this.datasetBounds && this.datasetBounds.min) || '2021-01-01'}" max="${(this.datasetBounds && this.datasetBounds.max) || '2021-12-31'}" value="${this.dateRanges.testing.end}">
+                                </div>
+                                <div class="date-input-group">
+                                    <label>End Time</label>
+                                    <input type="time" class="date-input" id="testingEndTime" value="${this.dateRanges.testing.endTime || '23:59'}">
                                 </div>
                             </div>
                             
@@ -967,11 +977,19 @@
                                 <h3><div class="period-icon simulation"></div>Simulation Period</h3>
                                 <div class="date-input-group">
                                     <label>Start Date</label>
-                                    <input type="date" class="date-input" id="simulationStart" min="2021-01-01" max="2021-12-31" value="${this.dateRanges.simulation.start}">
+                                    <input type="date" class="date-input" id="simulationStart" min="${(this.datasetBounds && this.datasetBounds.min) || '2021-01-01'}" max="${(this.datasetBounds && this.datasetBounds.max) || '2021-12-31'}" value="${this.dateRanges.simulation.start}">
+                                </div>
+                                <div class="date-input-group">
+                                    <label>Start Time</label>
+                                    <input type="time" class="date-input" id="simulationStartTime" value="${this.dateRanges.simulation.startTime || '00:00'}">
                                 </div>
                                 <div class="date-input-group">
                                     <label>End Date</label>
-                                    <input type="date" class="date-input" id="simulationEnd" min="2021-01-01" max="2021-12-31" value="${this.dateRanges.simulation.end}">
+                                    <input type="date" class="date-input" id="simulationEnd" min="${(this.datasetBounds && this.datasetBounds.min) || '2021-01-01'}" max="${(this.datasetBounds && this.datasetBounds.max) || '2021-12-31'}" value="${this.dateRanges.simulation.end}">
+                                </div>
+                                <div class="date-input-group">
+                                    <label>End Time</label>
+                                    <input type="time" class="date-input" id="simulationEndTime" value="${this.dateRanges.simulation.endTime || '23:59'}">
                                 </div>
                             </div>
                         </div>
@@ -1025,8 +1043,8 @@
                                 <div class="metrics-grid" id="metricsGrid">
                                     <!-- Metrics will be populated here -->
                                 </div>
-                                <div class="metrics-note">
-                                    *Model trained on 6 months of data - Validation on 2 months - Results based on 1 month simulation
+                                <div class="metrics-note" id="trainingInfo">
+                                    *Model training in progress...
                                 </div>
                             </div>
                             
@@ -1059,7 +1077,58 @@
             renderSimulationStep(content) {
                 content.innerHTML = `
                     <div class="step-title">Real-Time Prediction Simulation</div>
-                    <!-- ... rest of the method ... -->
+                    <div class="step-counter">Step 4 of 4</div>
+
+                    <div class="simulation-container">
+                        <div class="simulation-section">
+                            <button class="train-model-btn" id="startSimulationBtn">Start Simulation</button>
+                        </div>
+
+                        <div id="simulationStatus" class="training-status hidden"><div class="status-icon">✓</div><span>✔ Simulation completed</span></div>
+
+                        <div class="charts-section">
+                            <div class="chart-card">
+                                <h3>Quality Scores Over Time</h3>
+                                <div class="chart-subtitle">Real-time</div>
+                                <div class="chart-container"><canvas id="qualityChart"></canvas></div>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Prediction Confidence Distribution</h3>
+                                <div class="chart-subtitle">Pass vs Fail</div>
+                                <div class="chart-container"><canvas id="confidenceChart"></canvas></div>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <h3>Statistics</h3>
+                            <div class="summary-grid">
+                                <div class="summary-item"><div class="summary-label">Total Predictions</div><div class="summary-value" id="statTotal">0</div></div>
+                                <div class="summary-item"><div class="summary-label">Pass Count</div><div class="summary-value" id="statPass">0</div></div>
+                                <div class="summary-item"><div class="summary-label">Fail Count</div><div class="summary-value" id="statFail">0</div></div>
+                                <div class="summary-item"><div class="summary-label">Average Confidence</div><div class="summary-value" id="statAvg">0%</div></div>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <h3>Live Prediction Stream</h3>
+                            <div style="overflow:auto; max-height:300px;">
+                                <table style="width:100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align:left; padding:6px; border-bottom:1px solid #eee;">Time</th>
+                                            <th style="text-align:left; padding:6px; border-bottom:1px solid #eee;">Sample ID</th>
+                                            <th style="text-align:left; padding:6px; border-bottom:1px solid #eee;">Prediction</th>
+                                            <th style="text-align:left; padding:6px; border-bottom:1px solid #eee;">Confidence</th>
+                                            <th style="text-align:left; padding:6px; border-bottom:1px solid #eee;">Temperature</th>
+                                            <th style="text-align:left; padding:6px; border-bottom:1px solid #eee;">Pressure</th>
+                                            <th style="text-align:left; padding:6px; border-bottom:1px solid #eee;">Humidity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="simulationTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 `;
 
                 this.initializeSimulationListeners();
@@ -1082,103 +1151,114 @@
                 trainModelBtn.textContent = 'Training...';
                 trainModelBtn.style.background = '#6c757d';
                 
-                // Simulate training delay
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                
-                // Generate mock training results
-                const mockResults = this.generateMockTrainingResults();
+                try {
+                    // Call the .NET backend API to train the model with selected ranges
+                    const response = await fetch('http://localhost:5000/api/training/train-model', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify((() => {
+                            const combine = (dateStr, timeStr) => new Date(`${dateStr}T${(timeStr||'00:00')}:00`);
+                            return {
+                                trainStart: combine(this.dateRanges.training.start, this.dateRanges.training.startTime),
+                                trainEnd: combine(this.dateRanges.training.end, this.dateRanges.training.endTime),
+                                testStart: combine(this.dateRanges.testing.start, this.dateRanges.testing.startTime),
+                                testEnd: combine(this.dateRanges.testing.end, this.dateRanges.testing.endTime)
+                            };
+                        })())
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const results = await response.json();
                 
                 // Show results
-                this.displayTrainingResults(mockResults);
-                trainingResults.classList.remove('hidden');
-                
-                // Update button
-                trainModelBtn.textContent = 'Model Trained';
-                trainModelBtn.style.background = '#28a745';
-                
-                // Enable next button
-                document.getElementById('nextBtn').disabled = false;
-            }
-
-            generateMockTrainingResults() {
-                return {
-                    accuracy: (Math.random() * 5 + 92).toFixed(1), // 92-97%
-                    precision: (Math.random() * 5 + 91).toFixed(1), // 91-96%
-                    recall: (Math.random() * 5 + 90).toFixed(1), // 90-95%
-                    f1Score: (Math.random() * 5 + 91).toFixed(1), // 91-96%
-                    trainingAccuracy: this.generateTrainingCurveData(),
-                    trainingLoss: this.generateLossCurveData(),
-                    confusionMatrix: {
-                        truePositive: Math.floor(Math.random() * 200 + 800),
-                        falsePositive: Math.floor(Math.random() * 50 + 20),
-                        trueNegative: Math.floor(Math.random() * 100 + 150),
-                        falseNegative: Math.floor(Math.random() * 30 + 15)
-                    }
-                };
-            }
-
-            generateTrainingCurveData() {
-                const epochs = 20;
-                const data = [];
-                let accuracy = 0.7;
-                
-                for (let i = 0; i < epochs; i++) {
-                    accuracy += (Math.random() * 0.03 - 0.005); // Gradual improvement with some noise
-                    if (accuracy > 0.97) accuracy = 0.97; // Cap at 97%
-                    data.push({
-                        epoch: i + 1,
-                        training: Math.max(0.65, accuracy + (Math.random() * 0.02)),
-                        validation: Math.max(0.60, accuracy - (Math.random() * 0.02))
-                    });
+                    this.displayTrainingResults(results);
+                    trainingResults.classList.remove('hidden');
+                    
+                    // Update button
+                    trainModelBtn.textContent = 'Model Trained';
+                    trainModelBtn.style.background = '#28a745';
+                    
+                    // Enable next button
+                    document.getElementById('nextBtn').disabled = false;
+                    
+                } catch (error) {
+                    console.error('Error training model:', error);
+                    alert('Training failed: ' + error.message);
+                    trainModelBtn.disabled = false;
+                    trainModelBtn.textContent = 'Train Model';
+                    trainModelBtn.style.background = '#007bff';
                 }
-                
-                return data;
             }
 
-            generateLossCurveData() {
-                const epochs = 20;
-                const data = [];
-                let loss = 1.2;
-                
-                for (let i = 0; i < epochs; i++) {
-                    loss -= (Math.random() * 0.05 + 0.02); // Decreasing loss
-                    if (loss < 0.1) loss = 0.1; // Minimum loss
-                    data.push({
-                        epoch: i + 1,
-                        training: Math.max(0.08, loss + (Math.random() * 0.05)),
-                        validation: Math.max(0.10, loss + (Math.random() * 0.08))
-                    });
-                }
-                
-                return data;
-            }
+            // removed mock training generators
 
             displayTrainingResults(results) {
                 // Display metrics
                 const metricsGrid = document.getElementById('metricsGrid');
+                const acc = (results.accuracy ?? results.Accuracy ?? 0);
+                const prec = (results.precision ?? results.Precision ?? 0);
+                const rec = (results.recall ?? results.Recall ?? 0);
+                const f1 = (results.f1Score ?? results.F1Score ?? 0);
                 metricsGrid.innerHTML = `
                     <div class="metric-card accuracy">
-                        <div class="metric-value">${results.accuracy}%</div>
+                        <div class="metric-value">${(acc * 100).toFixed(1)}%</div>
                         <div class="metric-label">Accuracy</div>
                     </div>
                     <div class="metric-card precision">
-                        <div class="metric-value">${results.precision}%</div>
+                        <div class="metric-value">${(prec * 100).toFixed(1)}%</div>
                         <div class="metric-label">Precision</div>
                     </div>
                     <div class="metric-card recall">
-                        <div class="metric-value">${results.recall}%</div>
+                        <div class="metric-value">${(rec * 100).toFixed(1)}%</div>
                         <div class="metric-label">Recall</div>
                     </div>
                     <div class="metric-card f1-score">
-                        <div class="metric-value">${results.f1Score}%</div>
+                        <div class="metric-value">${(f1 * 100).toFixed(1)}%</div>
                         <div class="metric-label">F1-Score</div>
                     </div>
                 `;
                 
-                // Render charts
+                // Update training info with real data
+                const trainingInfo = document.getElementById('trainingInfo');
+                if (results.status === 'Success') {
+                    // Get the actual data sizes from the stored dataset
+                    const dataset = this.dataset;
+                    if (dataset && dataset.rows) {
+                        const totalRecords = dataset.rows.length;
+                        const trainSize = Math.floor(totalRecords * 0.7); // 70% for training
+                        const testSize = totalRecords - trainSize;
+                        
+                        trainingInfo.textContent = `*Model trained on ${trainSize} records - Validation on ${testSize} records - Results based on actual ML training`;
+                    } else {
+                        trainingInfo.textContent = `*Model trained successfully - Results based on actual ML training`;
+                    }
+                } else {
+                    trainingInfo.textContent = `*Training completed with fallback data`;
+                }
+                
+                // Render charts if available
                 setTimeout(() => {
-                    this.renderTrainingChart(results);
-                    this.renderConfusionMatrix(results.confusionMatrix);
+                    const trainingChartB64 = results.trainingChartBase64 || results.TrainingChartBase64;
+                    const confusionMatrixB64 = results.confusionMatrixBase64 || results.ConfusionMatrixBase64;
+                    const cmCounts = results.confusionMatrix || results.ConfusionMatrix;
+
+                    if (trainingChartB64) {
+                        this.renderTrainingChartFromBase64(trainingChartB64);
+                    } else {
+                        this.renderTrainingChart(results);
+                    }
+                    
+                    // Prefer structured counts for donut; fall back to image
+                    if (cmCounts) {
+                        this.renderConfusionMatrix(cmCounts);
+                    } else if (confusionMatrixB64) {
+                        this.renderConfusionMatrixFromBase64(confusionMatrixB64);
+                    }
                 }, 100);
             }
 
@@ -1189,11 +1269,11 @@
                     this.trainingChart.destroy();
                 }
                 
-                const epochs = results.trainingAccuracy.map(d => d.epoch);
-                const trainingAcc = results.trainingAccuracy.map(d => d.training);
-                const validationAcc = results.trainingAccuracy.map(d => d.validation);
-                const trainingLoss = results.trainingLoss.map(d => d.training);
-                const validationLoss = results.trainingLoss.map(d => d.validation);
+                const epochs = results.trainingAccuracy?.map(d => d.epoch) || [];
+                const trainingAcc = results.trainingAccuracy?.map(d => d.training) || [];
+                const validationAcc = results.trainingAccuracy?.map(d => d.validation) || [];
+                const trainingLoss = results.trainingLoss?.map(d => d.training) || [];
+                const validationLoss = results.trainingLoss?.map(d => d.validation) || [];
                 
                 this.trainingChart = new Chart(ctx, {
                     type: 'line',
@@ -1341,6 +1421,16 @@
                         this.hideValidationResults();
                     });
                 });
+                // also watch time inputs
+                const timeInputs = document.querySelectorAll('input[type="time"]');
+                timeInputs.forEach(input => {
+                    input.addEventListener('change', () => {
+                        this.updateDateRanges();
+                        this.isValidated = false;
+                        document.getElementById('nextBtn').disabled = true;
+                        this.hideValidationResults();
+                    });
+                });
 
                 validateBtn.addEventListener('click', () => this.validateDateRanges());
                 nextBtn.addEventListener('click', () => this.nextStep());
@@ -1349,19 +1439,48 @@
             updateDateRanges() {
                 this.dateRanges.training.start = document.getElementById('trainingStart').value;
                 this.dateRanges.training.end = document.getElementById('trainingEnd').value;
+                this.dateRanges.training.startTime = document.getElementById('trainingStartTime').value;
+                this.dateRanges.training.endTime = document.getElementById('trainingEndTime').value;
                 this.dateRanges.testing.start = document.getElementById('testingStart').value;
                 this.dateRanges.testing.end = document.getElementById('testingEnd').value;
+                this.dateRanges.testing.startTime = document.getElementById('testingStartTime').value;
+                this.dateRanges.testing.endTime = document.getElementById('testingEndTime').value;
                 this.dateRanges.simulation.start = document.getElementById('simulationStart').value;
                 this.dateRanges.simulation.end = document.getElementById('simulationEnd').value;
+                this.dateRanges.simulation.startTime = document.getElementById('simulationStartTime').value;
+                this.dateRanges.simulation.endTime = document.getElementById('simulationEndTime').value;
             }
 
-            validateDateRanges() {
+            async validateDateRanges() {
                 this.updateDateRanges();
-                const validation = this.performDateValidation();
-                
                 const messageDiv = document.getElementById('validationMessage');
                 
-                if (validation.isValid) {
+                try {
+                    const combine = (dateStr, timeStr) => new Date(`${dateStr}T${(timeStr||'00:00')}:00`);
+                    const body = {
+                        trainStart: combine(this.dateRanges.training.start, this.dateRanges.training.startTime),
+                        trainEnd: combine(this.dateRanges.training.end, this.dateRanges.training.endTime),
+                        testStart: combine(this.dateRanges.testing.start, this.dateRanges.testing.startTime),
+                        testEnd: combine(this.dateRanges.testing.end, this.dateRanges.testing.endTime),
+                        simStart: combine(this.dateRanges.simulation.start, this.dateRanges.simulation.startTime),
+                        simEnd: combine(this.dateRanges.simulation.end, this.dateRanges.simulation.endTime)
+                    };
+
+                    const response = await fetch('http://localhost:5000/api/dateranges/validate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok || data.status !== 'Valid') {
+                        throw new Error(data.message || 'Invalid ranges');
+                    }
+
+                    // Save daily counts for timeline
+                    this.dailyCounts = data.dailyCounts || [];
+
                     messageDiv.innerHTML = `
                         <div class="validation-message success">
                             <span class="icon">✓</span>
@@ -1372,11 +1491,11 @@
                     document.getElementById('nextBtn').disabled = false;
                     this.showValidationResults();
                     this.renderTimelineChart();
-                } else {
+                } catch (err) {
                     messageDiv.innerHTML = `
                         <div class="validation-message error">
                             <span class="icon">⚠</span>
-                            ${validation.errors.join('<br>')}
+                            ${err.message}
                         </div>
                     `;
                     this.isValidated = false;
@@ -1516,17 +1635,18 @@
                 const testingData = new Array(12).fill(0);
                 const simulationData = new Array(12).fill(0);
 
-                // Calculate data volumes per month for each period
-                this.mockDataset.forEach(record => {
+                // Calculate data volumes per month for each period based on backend daily counts
+                (this.dailyCounts || []).forEach(record => {
                     const date = new Date(record.date);
                     const month = date.getMonth();
+                    const count = record.records || 0;
                     
                     if (this.isDateInRange(record.date, this.dateRanges.training)) {
-                        trainingData[month] += record.recordCount;
+                        trainingData[month] += count;
                     } else if (this.isDateInRange(record.date, this.dateRanges.testing)) {
-                        testingData[month] += record.recordCount;
+                        testingData[month] += count;
                     } else if (this.isDateInRange(record.date, this.dateRanges.simulation)) {
-                        simulationData[month] += record.recordCount;
+                        simulationData[month] += count;
                     }
                 });
 
@@ -1572,7 +1692,97 @@
             }
 
             async startSimulation() {
-                // ... full method content ...
+                const btn = document.getElementById('startSimulationBtn');
+                btn.disabled = true;
+                btn.textContent = 'Running...';
+
+                // fetch rows for simulation period
+                const response = await fetch('http://localhost:5000/api/simulation/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        start: new Date(this.dateRanges.simulation.start),
+                        end: new Date(this.dateRanges.simulation.end)
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok || data.Status === 'Invalid' || data.status === 'Invalid') {
+                    alert(data.message || data.Message || 'Simulation failed');
+                    btn.disabled = false;
+                    btn.textContent = 'Start Simulation';
+                    return;
+                }
+
+                const rows = data.rows || data.Rows || [];
+
+                // initialize charts
+                const qctx = document.getElementById('qualityChart').getContext('2d');
+                if (this.qualityChart) this.qualityChart.destroy();
+                this.qualityChart = new Chart(qctx, { type: 'line', data: { labels: [], datasets: [{ label: 'Quality (Confidence %)', data: [], borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.1)', tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } } });
+
+                const cctx = document.getElementById('confidenceChart').getContext('2d');
+                if (this.confidenceChart) this.confidenceChart.destroy();
+                this.confidenceChart = new Chart(cctx, { type: 'doughnut', data: { labels: ['Pass','Fail'], datasets: [{ data: [0,0], backgroundColor: ['#28a745','#dc3545'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+
+                // stats
+                let pass = 0, fail = 0, total = 0, avg = 0;
+                const tbody = document.getElementById('simulationTable');
+                tbody.innerHTML = '';
+
+                const updateStats = () => {
+                    document.getElementById('statTotal').textContent = String(total);
+                    document.getElementById('statPass').textContent = String(pass);
+                    document.getElementById('statFail').textContent = String(fail);
+                    document.getElementById('statAvg').textContent = `${avg.toFixed(1)}%`;
+                };
+
+                // stream rows at 1/sec
+                let idx = 0;
+                const tick = () => {
+                    if (idx >= rows.length) {
+                        clearInterval(this.simulationInterval);
+                        document.getElementById('simulationStatus').classList.remove('hidden');
+                        btn.disabled = false;
+                        btn.textContent = 'Restart Simulation';
+                        return;
+                    }
+                    const r = rows[idx++];
+                    const time = r.timestamp || r.Timestamp || '';
+                    const sampleId = r.sample_id || r.sampleId || r.SampleId || '';
+                    const pred = r.prediction || r.Prediction || '';
+                    const conf = Number(r.confidence ?? r.Confidence ?? 0);
+                    const t = r.temperature ?? r.Temperature ?? '';
+                    const p = r.pressure ?? r.Pressure ?? '';
+                    const h = r.humidity ?? r.Humidity ?? '';
+
+                    // table
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td style="padding:6px; border-bottom:1px solid #f1f1f1;">${time}</td>
+                                    <td style="padding:6px; border-bottom:1px solid #f1f1f1;">${sampleId}</td>
+                                    <td style="padding:6px; border-bottom:1px solid #f1f1f1;">${pred}</td>
+                                    <td style="padding:6px; border-bottom:1px solid #f1f1f1;">${conf.toFixed(1)}%</td>
+                                    <td style="padding:6px; border-bottom:1px solid #f1f1f1;">${t}</td>
+                                    <td style="padding:6px; border-bottom:1px solid #f1f1f1;">${p}</td>
+                                    <td style="padding:6px; border-bottom:1px solid #f1f1f1;">${h}</td>`;
+                    tbody.appendChild(tr);
+
+                    // charts
+                    this.qualityChart.data.labels.push(total + 1);
+                    this.qualityChart.data.datasets[0].data.push(conf);
+                    this.qualityChart.update('none');
+
+                    if (pred === 'Pass') { pass++; this.confidenceChart.data.datasets[0].data[0] = pass; }
+                    else { fail++; this.confidenceChart.data.datasets[0].data[1] = fail; }
+                    this.confidenceChart.update('none');
+
+                    total++;
+                    avg = ((avg * (total - 1)) + conf) / total;
+                    updateStats();
+                };
+
+                updateStats();
+                this.simulationInterval = setInterval(tick, 1000);
             }
 
             initializeSimulationCharts() {
@@ -1592,6 +1802,16 @@
                         <p>Please check back later for updates.</p>
                     </div>
                 `;
+            }
+
+            renderTrainingChartFromBase64(base64Data) {
+                const chartContainer = document.getElementById('trainingChart').parentElement;
+                chartContainer.innerHTML = `<img src="data:image/png;base64,${base64Data}" style="width: 100%; height: auto;" alt="Training Chart">`;
+            }
+
+            renderConfusionMatrixFromBase64(base64Data) {
+                const chartContainer = document.getElementById('confusionChart').parentElement;
+                chartContainer.innerHTML = `<img src="data:image/png;base64,${base64Data}" style="width: 100%; height: auto;" alt="Confusion Matrix">`;
             }
 
                         

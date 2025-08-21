@@ -1,0 +1,16 @@
+node_modules
+dist
+.git
+**/bin
+**/obj
+**/__pycache__
+**/.DS_Store
+ml-service/venv
+ml-service/catboost_info
+screen_1
+backup
+Dockerfile*
+docker-compose.yml
+LICENSE
+README.md
+
