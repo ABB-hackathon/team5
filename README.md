@@ -292,6 +292,40 @@ npm test      # unit tests via Karma
 
 ---
 
+## Dockerized Deployment
+
+Run the full stack with one command:
+
+```bash
+docker-compose up --build
+```
+
+Services and ports:
+
+- frontend-angular: `http://localhost:4200`
+- backend-dotnet: `http://localhost:8080`
+- ml-service-python: `http://localhost:8000`
+
+Notes:
+
+- The frontend proxies `/api/*` to the backend in Nginx.
+- The backend calls the ML service at `http://ml-service-python:8000` inside the compose network.
+- HTTPS redirection is disabled for container use; use HTTP endpoints above.
+
+To rebuild after code changes:
+
+```bash
+docker-compose build --no-cache && docker-compose up
+```
+
+To stop and remove containers:
+
+```bash
+docker-compose down
+```
+
+---
+
 ## Troubleshooting
 
 - 404/connection errors from API to ML: ensure `ML_SERVICE_URL` matches the ML host/port and the ML service is running.
