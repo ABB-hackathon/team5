@@ -1159,7 +1159,7 @@
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify((() => {
-                            const combine = (dateStr, timeStr) => new Date(`${dateStr}T${(timeStr||'00:00')}:00`);
+                            const combine = (dateStr, timeStr) => `${dateStr}T${(timeStr||'00:00')}:00`;
                             return {
                                 trainStart: combine(this.dateRanges.training.start, this.dateRanges.training.startTime),
                                 trainEnd: combine(this.dateRanges.training.end, this.dateRanges.training.endTime),
