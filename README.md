@@ -326,6 +326,54 @@ docker-compose down
 
 ---
 
+#  Usage Instructions
+
+Once you clone the repository, follow these steps to run the system locally.
+
+---
+
+## 1. Frontend (Angular)
+```bash
+# From project root
+ng build
+ng serve
+```
+Runs the Angular frontend.
+
+The terminal will display the app URL (e.g., http://localhost:4200).
+
+---
+
+## 2. Backend (ASP.NET Core API)
+```bash
+# From project root
+cd backend-dotnet/IntelliInspect.API
+
+dotnet build
+dotnet run
+```
+Starts the backend API service.
+
+---
+
+## 3. Machine Learning Service (FastAPI)
+```bash
+# From project root
+cd ml-service
+
+python main.py
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+Runs the ML microservice on port **8000**.
+
+---
+
+##  Access the Application
+
+- Open the frontend URL shown in the Angular terminal (default: http://localhost:4200).  
+- The frontend will automatically connect with the backend API and ML service.
+
+---
 ## Troubleshooting
 
 - 404/connection errors from API to ML: ensure `ML_SERVICE_URL` matches the ML host/port and the ML service is running.
